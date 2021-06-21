@@ -1,0 +1,11 @@
+{
+  "name": "cybersmart",
+  "version": "1.0.0",
+  "description": "UI developer technical challenge",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Bola Adekoya",
+  "license": "ISC"
+}
