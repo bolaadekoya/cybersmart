@@ -1,12 +1,150 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
+
 <head>
     <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>Temperature checker</title>
+    <link rel="stylesheet" href="index.css">
+    <script src="./main.js"></script>
 </head>
+
 <body>
-    
+    <h2>Temperature Checker</h2>
+    <div class="container">
+        <div class="input-cont">
+            <input name="location" type="text" placeholder="Enter your location">
+            <button id="getWeather">Check</button>
+        </div>
+        <div class="temp-cont">
+            <div class="circle">
+                <span id="cpu"></span>
+                <img alt="img1" id="cpu-img" class="hide" />
+                <span class="label">CPU temp(<span>&#8451;</span>)</span>
+            </div>
+            <div class="circle">
+                <span id="weather"></span>
+                <img alt="img2" id="weather-img" class="hide" />
+                <span class="label">Current weather(<span>&#8451;</span>)</span>
+            </div>
+        </div>
+    </div>
+    <div class="notification" class="hide"></div>
+    <script>
+        const ipcRenderer = require('electron').ipcRenderer;
+
+        const setImgSrc = (ele, src) => {
+            ele.setAttribute('src', src);
+        }
+
+        // function to show and hide element
+        const setVisibility = (elem, visible) => {
+            if (visible) {
+                elem.style.display = "inline-block";
+            } else {
+                elem.style.display = "none";
+            }
+        }
+
+        const showNotification = (type) => {
+            let notification = document.querySelector('.notification');
+
+            setVisibility(notification, true);
+            if (type === 'warning') {
+                notification.style.background = '#856404';
+                notification.style.color = '#fff3cd';
+                notification.style.borderColor = '#ffeeba';
+                notification.innerHTML = 'Warning! More data required.';
+            } else {
+                notification.style.background = '#f8d7da';
+                notification.style.color = '#721c24';
+                notification.style.borderColor = '#f5c6cb';
+                notification.innerHTML = 'Error! Something went wrong.';
+            }
+
+            setTimeout(() => setVisibility(notification, false), 5000)
+        }
+
+        // Add load event to window - this method sends message to the main process that the app is loading
+        window.addEventListener('load', () => {
+
+            // on app load - we want to get the CPU temperature from the main process
+            ipcRenderer.send("appload");
+
+            // listen to appload task finish - it will receive response (param) from the main process
+            // response in this case is the { text : cpu temperature, type : type_of_response (success | error) }
+            ipcRenderer.on('appload-task-finished', (event, param) => {
+                // get the #cpu element from the view
+                let cpu = document.querySelector('#cpu');
+                let img = document.querySelector('#cpu-img');
+
+                // hide both element on default
+                setVisibility(cpu, false);
+                setVisibility(img, false);
+
+                // if the cpu fetch is successful and there is a value - display value in the view
+                if (param.type === "success" && param.text !== null) {
+                    // show right element
+                    setVisibility(cpu, true);
+                    cpu.innerHTML = param.text;
+                }
+                // if the cpu fetch is successful and there is no value - display a warning icon on screen  
+                // and an alert pop to inform the user that we are unable to fetch the cpu temp
+                else if (param.type === "success" && param.text === null) {
+                    setVisibility(img, true);
+                    setImgSrc(img, './assets/warning.png');
+                    showNotification('warning');
+                } else {
+                    // if there is an error while fetching the cpu data, show error icon on screen and alert the user
+                    setVisibility(img, true);
+                    setImgSrc(img, './assets/error.png');
+                    showNotification('error');
+                }
+            });
+
+        });
+
+        const btnclick = document.querySelector('#getWeather');
+
+        btnclick.addEventListener('click', () => {
+            // get location typed in the input box
+            let arg = document.getElementsByName('location')[0].value;
+
+            // on check button click - we want to get the weather of the location in the input box
+            ipcRenderer.send("btnclick", arg);
+
+
+            // listen to butnclick task finish - it will receive response (param) from the main process
+            // response in this case is the { text : current_weather, type : type_of_response (success | error) }
+            ipcRenderer.on('btnclick-task-finished', (event, param) => {
+                // get the #weather element from the view
+                let weather = document.querySelector('#weather');
+                let img = document.querySelector('#weather-img');
+
+                // hide both element on default
+                setVisibility(weather, false);
+                setVisibility(img, false);
+
+                // if the weather fetch is successful and there is a value - display value in the view
+                if (param.type === "success" && param.text !== null) {
+                    // show right element
+                    setVisibility(weather, true);
+                    weather.innerHTML = param.text;
+                }
+                // if the weather fetch is successful and there is no value - display a warning icon on screen  
+                // and an alert pop to inform the user that we are unable to fetch the weather temp
+                else if (param.type === "success" && param.text === null) {
+                    setVisibility(img, true);
+                    setImgSrc(img, './assets/warning.png');
+                    showNotification('warning');
+                } else {
+                    // if there is an error while fetching the weather data, show error icon on screen and alert the user
+                    setVisibility(img, true);
+                    setImgSrc(img, './assets/error.png');
+                    showNotification('error');
+                }
+            });
+        });
+    </script>
 </body>
+
 </html>

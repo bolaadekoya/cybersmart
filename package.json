@@ -4,8 +4,21 @@
   "description": "UI developer technical challenge",
   "main": "index.js",
   "scripts": {
+    "start": "electron .",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "Bola Adekoya",
-  "license": "ISC"
+  "license": "ISC",
+  "dependencies": {
+    "electron": "^13.1.2",
+    "electron-fetch": "^1.7.3",
+    "path": "^0.12.7",
+    "systeminformation": "^5.7.7"
+  },
+  "optionalDependencies": {
+    "osx-temperature-sensor": "^1.0.7"
+  },
+  "devDependencies": {
+    "electron-rebuild": "^2.3.5"
+  }
 }
